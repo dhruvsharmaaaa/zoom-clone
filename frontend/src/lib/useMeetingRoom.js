@@ -104,9 +104,12 @@ export function useMeetingRoom(meetingCode, displayName) {
 
     async function setup() {
       try {
-        // 1. Get camera + mic access.
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        // 1. Get camera + mic access -  as TWO SEPARATE getUserMedia calls
+       const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const videoStream = await navigator.mediaDevices.getUserMedia({ video: true });
         if (cancelled) return;
+
+        const stream = new MediaStream([...audioStream.getTracks(), ...videoStream.getTracks()]);
         localStreamRef.current = stream;
         setLocalStream(stream);
 
