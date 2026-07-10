@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+  Zoom's actual brand palette (matched from the real web app):
+  - Primary blue:   #2D8CFF
+  - Blue hover:     #2681f2
+  - Dark navy text: #191919
+  - Meeting room bg: #1C1C1E (near-black, video tiles pop against it)
+*/
+:root {
+  --zoom-blue: #2D8CFF;
+  --zoom-blue-hover: #2681f2;
+  --zoom-blue-dark: #0E71EB;
+  --zoom-text: #191919;
+  --zoom-gray-bg: #F7F7F8;
+  --zoom-border: #E5E5E6;
+  --zoom-room-bg: #1C1C1E;
+  --zoom-tile-bg: #2C2C2E;
+  --zoom-danger: #E02D2D;
+}
+
+body {
+  color: var(--zoom-text);
+  background: var(--zoom-gray-bg);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+.btn-zoom-blue {
+  background: var(--zoom-blue);
+  color: white;
+}
+.btn-zoom-blue:hover {
+  background: var(--zoom-blue-hover);
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+}
