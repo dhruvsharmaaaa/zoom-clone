@@ -277,12 +277,46 @@ export function useMeetingRoom(meetingCode, displayName) {
     sendMessage({ type: "toggle-mute", is_muted: newMuted });
   };
 
-  const toggleVideo = () => {
+const toggleVideo = async () => {
     if (!localStreamRef.current) return;
-    const newVideoOn = !isVideoOn;
-    localStreamRef.current.getVideoTracks().forEach((t) => (t.enabled = newVideoOn));
-    setIsVideoOn(newVideoOn);
-    sendMessage({ type: "toggle-video", is_video_on: newVideoOn });
+
+    if (isVideoOn) {
+      // Turning OFF: fully STOP the hardware track (releases the camera,
+      // turns off the camera indicator light) rather than just setting
+      // `.enabled = false`. Some laptops/OSes power down a video track
+      // that's merely "disabled" for a bit, and it never produces frames
+      // again afterwards -- that's the black-screen-stuck bug. Stopping
+      // and later re-acquiring a fresh track avoids that entirely.
+      localStreamRef.current.getVideoTracks().forEach((t) => t.stop());
+      setIsVideoOn(false);
+      sendMessage({ type: "toggle-video", is_video_on: false });
+      return;
+    }
+
+    // Turning ON: request a brand new camera track and swap it into
+    // every existing peer connection with replaceTrack(). replaceTrack
+    // does NOT require renegotiating the whole WebRTC connection -- the
+    // other side keeps receiving on the same media line, just with a
+    // fresh video source.
+    try {
+      const newStream = await navigator.mediaDevices.getUserMedia({ video: true });
+      const newTrack = newStream.getVideoTracks()[0];
+
+      const oldTrack = localStreamRef.current.getVideoTracks()[0];
+      if (oldTrack) localStreamRef.current.removeTrack(oldTrack);
+      localStreamRef.current.addTrack(newTrack);
+
+      Object.values(peersRef.current).forEach((pc) => {
+        const sender = pc.getSenders().find((s) => s.track && s.track.kind === "video");
+        if (sender) sender.replaceTrack(newTrack);
+      });
+
+      setLocalStream(localStreamRef.current);
+      setIsVideoOn(true);
+      sendMessage({ type: "toggle-video", is_video_on: true });
+    } catch (err) {
+      console.error("Could not re-enable camera:", err);
+    }
   };
 
   const leaveMeeting = async () => {
