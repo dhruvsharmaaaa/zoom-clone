@@ -1,4 +1,4 @@
-# Zoom Clone — SDE Fullstack Assignment
+# Zoom Clone With End-to-End Features
 
 A functional video-conferencing web app that replicates Zoom's core dashboard
 and meeting-room workflows: instant meetings, scheduled meetings, join by ID
