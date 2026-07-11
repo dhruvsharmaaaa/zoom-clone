@@ -6,6 +6,9 @@ or link, real peer-to-peer video/audio via WebRTC, and host controls.
 
 ## Live Demo
 
+- Live App - https://zoom-clone-lake-ten.vercel.app/
+- Backend API - https://zoom-clone-caye.onrender.com/
+- API Docs (Swagger) - https://zoom-clone-caye.onrender.com/docs
 
 
 ## Tech Stack
@@ -178,7 +181,6 @@ Documented here deliberately, since debugging real WebRTC media issues was a sub
 - **Backend**: Render, deployed via the included Dockerfile, root directory backend.
 
 ## Author
-**Dhruv Sharma
-Netaji Subhas University of Technology**
-
+- **Dhruv Sharma**
+- **Netaji Subhas University of Technology**
 
