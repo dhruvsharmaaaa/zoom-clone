@@ -177,5 +177,8 @@ Documented here deliberately, since debugging real WebRTC media issues was a sub
 - **Frontend**: Vercel, root directory frontend, with NEXT_PUBLIC_API_URL pointing at the deployed backend.
 - **Backend**: Render, deployed via the included Dockerfile, root directory backend.
 
+## Author
+**Dhruv Sharma
+Netaji Subhas University of Technology**
 
 
