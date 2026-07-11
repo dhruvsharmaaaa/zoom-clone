@@ -1,9 +1,9 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Video, LogIn, CalendarPlus, ScreenShare } from "lucide-react";
 import Sidebar from "@/components/Sidebar";
 import TopBar from "@/components/TopBar";
+import HomeHero from "@/components/HomeHero";
 import NewMeetingModal from "@/components/NewMeetingModal";
 import JoinMeetingModal from "@/components/JoinMeetingModal";
 import ScheduleMeetingModal from "@/components/ScheduleMeetingModal";
@@ -47,7 +47,7 @@ export default function DashboardPage() {
   }, [loadData]);
 
   function handleStartScheduled(meeting) {
-    router.push(`/meeting/${meeting.meeting_code}?name=${encodeURIComponent("Dhruv Sharma")}`);
+    router.push(`/meeting/${meeting.meeting_code}?name=${encodeURIComponent(meeting.host_name || "Host")}`);
   }
 
   const list = tab === "upcoming" ? upcoming : recent;
@@ -59,37 +59,12 @@ export default function DashboardPage() {
         <Sidebar />
 
         <main className="flex-1 overflow-y-auto scrollbar-thin">
-          <div className="max-w-3xl mx-auto px-6 py-10">
-            <h1 className="text-2xl font-semibold mb-1">Good {timeOfDay()}, Dhruv</h1>
-            <p className="text-gray-500 text-sm mb-8">Start, join, or schedule a meeting below.</p>
-
-            {/* Big action buttons row -- New / Join / Schedule / Share Screen */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-10">
-              <ActionButton
-                icon={Video}
-                label="New Meeting"
-                color="bg-[var(--zoom-blue)] hover:bg-[var(--zoom-blue-hover)] text-white"
-                onClick={() => setActiveModal("new")}
-              />
-              <ActionButton
-                icon={LogIn}
-                label="Join"
-                color="bg-white border border-[var(--zoom-border)] hover:bg-gray-50 text-gray-800"
-                onClick={() => setActiveModal("join")}
-              />
-              <ActionButton
-                icon={CalendarPlus}
-                label="Schedule"
-                color="bg-white border border-[var(--zoom-border)] hover:bg-gray-50 text-gray-800"
-                onClick={() => setActiveModal("schedule")}
-              />
-              <ActionButton
-                icon={ScreenShare}
-                label="Share Screen"
-                color="bg-white border border-[var(--zoom-border)] hover:bg-gray-50 text-gray-400 cursor-not-allowed"
-                onClick={() => {}}
-              />
-            </div>
+          <div className="max-w-3xl mx-auto px-6 py-6">
+            <HomeHero
+              onNewMeeting={() => setActiveModal("new")}
+              onJoin={() => setActiveModal("join")}
+              onSchedule={() => setActiveModal("schedule")}
+            />
 
             {/* Tabs */}
             <div className="flex gap-6 border-b border-[var(--zoom-border)] mb-2">
@@ -140,23 +115,4 @@ export default function DashboardPage() {
       )}
     </div>
   );
-}
-
-function ActionButton({ icon: Icon, label, color, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`flex flex-col items-center justify-center gap-2 rounded-xl py-6 font-medium text-sm transition-colors ${color}`}
-    >
-      <Icon size={26} />
-      {label}
-    </button>
-  );
-}
-
-function timeOfDay() {
-  const h = new Date().getHours();
-  if (h < 12) return "morning";
-  if (h < 17) return "afternoon";
-  return "evening";
 }
