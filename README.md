@@ -104,6 +104,19 @@ schema normalized: host actions like "mute all" or "remove participant" are
 simple `UPDATE`/`SELECT` queries against the `participants` table instead of
 mutating a nested JSON blob.
 
+## How the Video Calling Works
+
+Every participant opens a direct RTCPeerConnection to every other participant in the meeting (a full mesh — appropriate for small meetings; a production system at scale would use a media server/SFU instead).
+
+To avoid two browsers offering to each other simultaneously (a race condition called "glare"), the rule is simple: whoever joins later initiates the offer to everyone already in the room.
+
+
+A new participant fetches the current participant list via REST.
+For each existing participant, they create a peer connection and send a WebRTC "offer" over a WebSocket.
+The existing participant replies with an "answer".
+Both sides exchange ICE candidates until a direct connection is established.
+From that point on, video and audio flow directly peer-to-peer — the backend is only involved in this initial handshake (signaling), never in the actual media.
+
 ## Setup Instructions
 
 ### Prerequisites
