@@ -173,3 +173,9 @@ Documented here deliberately, since debugging real WebRTC media issues was a sub
 - Turning the camera off silently killed the microphone too: the original design used one shared <video> element to carry both picture and sound for each participant, and hid/removed that element when the camera was off — which killed the audio playing through it as a side effect. Fixed by giving audio its own dedicated, always-mounted <audio> element per participant, completely decoupled from whatever the picture is doing.
 
 
+## Deployment
+- **Frontend**: Vercel, root directory frontend, with NEXT_PUBLIC_API_URL pointing at the deployed backend.
+- **Backend**: Render, deployed via the included Dockerfile, root directory backend.
+
+
+
