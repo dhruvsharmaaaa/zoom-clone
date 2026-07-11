@@ -120,7 +120,6 @@ To avoid two browsers offering to each other simultaneously (a race condition ca
 ### Prerequisites
 - Python 3.10+
 - Node.js 18+
-- npm
 
 ### 1. Backend
 
@@ -166,5 +165,12 @@ Frontend now runs at `http://localhost:3000`.
   functionally implemented — they weren't in the "Must Have" list.
 - **SQLite** is used as required; the same SQLAlchemy models would work
   against Postgres/MySQL with only the connection string changed.
+
+## Known Issues Fixed During Development
+
+Documented here deliberately, since debugging real WebRTC media issues was a substantial part of building this correctly:
+
+- Camera not turning back on after being switched off: the video element's re-attachment effect wasn't watching the camera-on/off state, only the stream object reference, which doesn't change when a track is swapped in place. Fixed by re-attaching whenever the toggle state changes.
+- Turning the camera off silently killed the microphone too: the original design used one shared <video> element to carry both picture and sound for each participant, and hid/removed that element when the camera was off — which killed the audio playing through it as a side effect. Fixed by giving audio its own dedicated, always-mounted <audio> element per participant, completely decoupled from whatever the picture is doing.
 
 
