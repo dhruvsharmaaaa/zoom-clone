@@ -167,7 +167,6 @@ Frontend now runs at `http://localhost:3000`.
   against Postgres/MySQL with only the connection string changed.
 
 ## Known Issues Fixed During Development
-
 Documented here deliberately, since debugging real WebRTC media issues was a substantial part of building this correctly:
 
 - Camera not turning back on after being switched off: the video element's re-attachment effect wasn't watching the camera-on/off state, only the stream object reference, which doesn't change when a track is swapped in place. Fixed by re-attaching whenever the toggle state changes.
