@@ -1,8 +1,12 @@
-# Zoom Clone With End-to-End Features
+# Zoom Clone — Video Conferencing Platform
 
 A functional video-conferencing web app that replicates Zoom's core dashboard
 and meeting-room workflows: instant meetings, scheduled meetings, join by ID
 or link, real peer-to-peer video/audio via WebRTC, and host controls.
+
+## Live Demo
+
+
 
 ## Tech Stack
 
