@@ -17,6 +17,47 @@ or link, real peer-to-peer video/audio via WebRTC, and host controls.
 | Database   | SQLite via SQLAlchemy ORM                                |
 | Video/Audio| WebRTC (peer-to-peer mesh), STUN via Google's public server |
 
+No external video SDK is used — video/audio calling is implemented directly with the browser's native RTCPeerConnection API, with the backend acting purely as a signaling relay.
+
+## Features
+
+### Landing Dashboard
+Zoom's real home-screen layout: live clock, current date, and colored action buttons (New meeting / Join / Schedule)
+Left navigation rail (Home / Chat / Meetings / Contacts / Apps)
+Upcoming and Recent meetings tabs, backed by the database
+
+### Instant Meetings
+One click generates a unique 10-digit Meeting ID and shareable invite link
+Immediately redirects into a live meeting room
+
+
+### Join Meeting
+Join via raw Meeting ID or a pasted invite link (auto-extracts the ID either way)
+Pre-join screen collects a display name before entering
+Backend validates the meeting actually exists (404 if not, 410 if it already ended)
+
+
+### Schedule Meetings
+Title, description, date & time picker, duration
+Auto-generates a meeting link at creation time
+Appears in the Upcoming Meetings list until started
+
+
+### Live Video Calling (WebRTC)
+Real peer-to-peer video and audio — not a simulation
+Mesh topology: every participant connects directly to every other participant
+Camera and microphone toggles, fully independent of each other (see Known Issues Fixed below)
+
+
+### Host Controls
+Whoever joins first in a session is treated as the host
+Mute All — forces every other participant muted
+Remove Participant — kicks a participant out of the meeting
+
+### Responsive Design
+Adapts across mobile, tablet, and desktop breakpoints
+
+
 ## Project Structure
 
 ```
