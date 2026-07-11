@@ -25,9 +25,9 @@ export default function TopBar() {
         </button>
         <button className="flex items-center gap-2 pl-1">
           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xs font-semibold">
-            DS
+            G
           </div>
-          <span className="hidden md:inline text-sm text-gray-700">Dhruv Sharma</span>
+          <span className="hidden md:inline text-sm text-gray-700">Guest</span>
           <ChevronDown size={14} className="text-gray-400" />
         </button>
       </div>

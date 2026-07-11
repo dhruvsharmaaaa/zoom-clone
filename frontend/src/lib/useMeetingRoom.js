@@ -45,6 +45,7 @@ export function useMeetingRoom(meetingCode, displayName) {
   const [isVideoOn, setIsVideoOn] = useState(true);
   const [status, setStatus] = useState("connecting"); // connecting | in-call | ended | error
   const [errorMessage, setErrorMessage] = useState("");
+  const [mediaError, setMediaError] = useState(""); // surfaced in the UI when a toggle fails
 
   const wsRef = useRef(null);
   const peersRef = useRef({}); // id -> RTCPeerConnection
@@ -104,8 +105,15 @@ export function useMeetingRoom(meetingCode, displayName) {
 
     async function setup() {
       try {
-        // 1. Get camera + mic access -  as TWO SEPARATE getUserMedia calls
-       const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        // 1. Get camera + mic access -- as TWO SEPARATE getUserMedia calls,
+        //    not one combined { video: true, audio: true } call. On some
+        //    laptops the camera and mic share the same underlying USB/
+        //    hardware capture session, so stopping the video track (which
+        //    toggleVideo below does, to properly release the camera)
+        //    can silently kill the mic's audio track too if they were
+        //    acquired together. Requesting them separately keeps the two
+        //    capture sessions fully independent.
+        const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
         const videoStream = await navigator.mediaDevices.getUserMedia({ video: true });
         if (cancelled) return;
 
@@ -274,51 +282,77 @@ export function useMeetingRoom(meetingCode, displayName) {
 
   const toggleMute = () => {
     if (!localStreamRef.current) return;
-    const newMuted = !isMuted;
-    localStreamRef.current.getAudioTracks().forEach((t) => (t.enabled = !newMuted));
-    setIsMuted(newMuted);
-    sendMessage({ type: "toggle-mute", is_muted: newMuted });
+    try {
+      const newMuted = !isMuted;
+      const audioTracks = localStreamRef.current.getAudioTracks();
+      console.log(`[toggleMute] setting audio tracks enabled=${!newMuted}`, audioTracks.map(t => ({ id: t.id, readyState: t.readyState })));
+      audioTracks.forEach((t) => (t.enabled = !newMuted));
+      setIsMuted(newMuted);
+      sendMessage({ type: "toggle-mute", is_muted: newMuted });
+    } catch (err) {
+      console.error("[toggleMute] failed:", err);
+      setMediaError(`Mute toggle failed: ${err.message}`);
+    }
   };
 
-const toggleVideo = async () => {
+  const toggleVideo = async () => {
     if (!localStreamRef.current) return;
+    setMediaError("");
 
     if (isVideoOn) {
-      // Turning OFF: fully STOP the hardware track (releases the camera,
-      // turns off the camera indicator light) rather than just setting
-      // `.enabled = false`. Some laptops/OSes power down a video track
-      // that's merely "disabled" for a bit, and it never produces frames
-      // again afterwards -- that's the black-screen-stuck bug. Stopping
-      // and later re-acquiring a fresh track avoids that entirely.
-      localStreamRef.current.getVideoTracks().forEach((t) => t.stop());
-      setIsVideoOn(false);
-      sendMessage({ type: "toggle-video", is_video_on: false });
+      try {
+        const videoTracks = localStreamRef.current.getVideoTracks();
+        console.log("[toggleVideo] stopping video tracks", videoTracks.map(t => ({ id: t.id, readyState: t.readyState })));
+        videoTracks.forEach((t) => t.stop());
+        setIsVideoOn(false);
+        sendMessage({ type: "toggle-video", is_video_on: false });
+      } catch (err) {
+        console.error("[toggleVideo] failed to stop camera:", err);
+        setMediaError(`Could not stop camera: ${err.message}`);
+      }
       return;
     }
 
     // Turning ON: request a brand new camera track and swap it into
-    // every existing peer connection with replaceTrack(). replaceTrack
-    // does NOT require renegotiating the whole WebRTC connection -- the
-    // other side keeps receiving on the same media line, just with a
-    // fresh video source.
+    // every existing peer connection with replaceTrack().
     try {
+      console.log("[toggleVideo] requesting a fresh camera track...");
       const newStream = await navigator.mediaDevices.getUserMedia({ video: true });
       const newTrack = newStream.getVideoTracks()[0];
+      console.log("[toggleVideo] got new track:", { id: newTrack.id, readyState: newTrack.readyState });
 
       const oldTrack = localStreamRef.current.getVideoTracks()[0];
       if (oldTrack) localStreamRef.current.removeTrack(oldTrack);
       localStreamRef.current.addTrack(newTrack);
 
+      const peerIds = Object.keys(peersRef.current);
+      console.log(`[toggleVideo] replacing track on ${peerIds.length} peer connection(s)`);
       Object.values(peersRef.current).forEach((pc) => {
         const sender = pc.getSenders().find((s) => s.track && s.track.kind === "video");
-        if (sender) sender.replaceTrack(newTrack);
+        if (sender) {
+          sender.replaceTrack(newTrack);
+        } else {
+          // No existing video sender (e.g. camera was off since the call
+          // started) -- add the track fresh instead.
+          pc.addTrack(newTrack, localStreamRef.current);
+        }
       });
 
       setLocalStream(localStreamRef.current);
       setIsVideoOn(true);
       sendMessage({ type: "toggle-video", is_video_on: true });
     } catch (err) {
-      console.error("Could not re-enable camera:", err);
+      // THIS is the important part: previously this error was only
+      // logged to the console and silently failed, which looked exactly
+      // like "the button doesn't respond." Now it's shown in the UI too.
+      console.error("[toggleVideo] could not re-enable camera:", err.name, err.message);
+      setMediaError(
+        err.name === "NotReadableError"
+          ? "Camera is busy or still releasing from another app/tab. Wait a second and try again."
+          : err.name === "NotAllowedError"
+          ? "Camera permission was denied. Check your browser's site settings and allow camera access."
+          : `Could not turn camera back on: ${err.message}`
+      );
     }
   };
 
@@ -338,6 +372,8 @@ const toggleVideo = async () => {
     await api.removeParticipant(meetingCode, participantId).catch(() => {});
   };
 
+  const clearMediaError = () => setMediaError("");
+
   return {
     meeting,
     me,
@@ -348,6 +384,8 @@ const toggleVideo = async () => {
     isVideoOn,
     status,
     errorMessage,
+    mediaError,
+    clearMediaError,
     toggleMute,
     toggleVideo,
     leaveMeeting,
