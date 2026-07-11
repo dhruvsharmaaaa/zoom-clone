@@ -22,9 +22,9 @@ No external video SDK is used — video/audio calling is implemented directly wi
 ## Features
 
 ### Landing Dashboard
-Zoom's real home-screen layout: live clock, current date, and colored action buttons (New meeting / Join / Schedule)
-Left navigation rail (Home / Chat / Meetings / Contacts / Apps)
-Upcoming and Recent meetings tabs, backed by the database
+- Zoom's real home-screen layout: live clock, current date, and colored action buttons (New meeting / Join / Schedule)
+- Left navigation rail (Home / Chat / Meetings / Contacts / Apps)
+- Upcoming and Recent meetings tabs, backed by the database
 
 ### Instant Meetings
 One click generates a unique 10-digit Meeting ID and shareable invite link
