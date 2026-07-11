@@ -1,15 +1,12 @@
 # Zoom Clone — Video Conferencing Platform
-
 A functional video-conferencing web app that replicates Zoom's core dashboard
 and meeting-room workflows: instant meetings, scheduled meetings, join by ID
 or link, real peer-to-peer video/audio via WebRTC, and host controls.
 
 ## Live Demo
-
 - Live App - https://zoom-clone-lake-ten.vercel.app/
 - Backend API - https://zoom-clone-caye.onrender.com/
 - API Docs (Swagger) - https://zoom-clone-caye.onrender.com/docs
-
 
 ## Tech Stack
 
@@ -55,8 +52,6 @@ No external video SDK is used — video/audio calling is implemented directly wi
 
 ### Responsive Design
 - Adapts across mobile, tablet, and desktop breakpoints
-
-
 
 ## Project Structure
 
@@ -148,7 +143,6 @@ npm install
 cp .env.example .env.local       # already points at localhost:8000 by default
 npm run dev
 ```
-
 Frontend now runs at `http://localhost:3000`.
 
 ## Assumptions
@@ -174,7 +168,6 @@ Documented here deliberately, since debugging real WebRTC media issues was a sub
 
 - Camera not turning back on after being switched off: the video element's re-attachment effect wasn't watching the camera-on/off state, only the stream object reference, which doesn't change when a track is swapped in place. Fixed by re-attaching whenever the toggle state changes.
 - Turning the camera off silently killed the microphone too: the original design used one shared <video> element to carry both picture and sound for each participant, and hid/removed that element when the camera was off — which killed the audio playing through it as a side effect. Fixed by giving audio its own dedicated, always-mounted <audio> element per participant, completely decoupled from whatever the picture is doing.
-
 
 ## Deployment
 - **Frontend**: Vercel, root directory frontend, with NEXT_PUBLIC_API_URL pointing at the deployed backend.
