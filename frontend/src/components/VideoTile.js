@@ -11,15 +11,33 @@ import { MicOff, Crown } from "lucide-react";
  */
 export default function VideoTile({ stream, name, isMuted, isVideoOn, isHost, isSelf }) {
   const videoRef = useRef(null);
+  const audioRef = useRef(null);
 
+  // The VIDEO element only ever cares about showing the picture. Its own
+  // effect no longer needs to depend on isVideoOn at all -- audio is now
+  // handled entirely separately below.
   useEffect(() => {
     if (videoRef.current && stream) {
       videoRef.current.srcObject = stream;
-      videoRef.current.play().catch((err) => {
-        console.warn("[VideoTile] play() was blocked/failed:", err.message);
-      });
+      videoRef.current.play().catch(() => {});
     }
-  }, [stream, isVideoOn]);
+  }, [stream]);
+
+  // The AUDIO element is COMPLETELY INDEPENDENT of the camera toggle.
+  // This is the actual fix: previously, one shared <video> element
+  // carried both picture and sound, so anything that touched it for the
+  // camera toggle (mounting/unmounting, reassigning srcObject, calling
+  // play() again) could interrupt its audio too. By giving audio its own
+  // dedicated element whose effect depends ONLY on `stream` -- never on
+  // isVideoOn -- turning the camera on/off can no longer affect sound
+  // even indirectly. We skip this for the local self-tile to avoid
+  // hearing an echo of your own mic.
+  useEffect(() => {
+    if (!isSelf && audioRef.current && stream) {
+      audioRef.current.srcObject = stream;
+      audioRef.current.play().catch(() => {});
+    }
+  }, [stream, isSelf]);
 
   const initials = (name || "?")
     .split(" ")
@@ -30,28 +48,24 @@ export default function VideoTile({ stream, name, isMuted, isVideoOn, isHost, is
 
   return (
     <div className="relative bg-[var(--zoom-tile-bg)] rounded-lg overflow-hidden aspect-video flex items-center justify-center">
-      {/*
-        IMPORTANT: the <video> element stays mounted the whole time the
-        stream exists -- it's never removed just because the camera is
-        off. That's because this SAME element is what plays the peer's
-        AUDIO track too. Previously, turning the picture off unmounted
-        this element entirely (replaced by the avatar div), which
-        silently killed that person's audio for everyone else as a side
-        effect -- turning off your camera should never turn off your mic.
-        Now we only visually hide the picture with opacity when the
-        camera is off; audio keeps flowing regardless.
-      */}
+      {/* Picture only -- always muted, since audio now plays through the
+          separate <audio> element below (for remote peers) or not at
+          all (for our own self-preview tile, to avoid echo). */}
       {stream && (
         <video
           ref={videoRef}
           autoPlay
           playsInline
-          muted={isSelf}
+          muted
           className={`absolute inset-0 w-full h-full object-cover [transform:scaleX(-1)] transition-opacity ${
             isVideoOn ? "opacity-100" : "opacity-0 pointer-events-none"
           }`}
         />
       )}
+
+      {/* Sound only -- invisible, always mounted for remote peers,
+          entirely unaffected by camera on/off. */}
+      {!isSelf && stream && <audio ref={audioRef} autoPlay />}
 
       {!isVideoOn && (
         <div className="relative z-10 w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-xl font-semibold">
