@@ -96,16 +96,6 @@ npm run dev
 
 Frontend now runs at `http://localhost:3000`.
 
-### 3. Try it
-
-- Open two browser windows/tabs at `http://localhost:3000`.
-- In one, click **New Meeting**, enter a name, start it.
-- Copy the meeting link/ID and open it in the second window — enter a
-  different name and join.
-- You should see live camera video between both windows (grant camera/mic
-  permission when prompted). Try mute, camera off, and (as host) Mute All /
-  remove participant from the Participants panel.
-
 ## Assumptions
 
 - **No login/auth**: a default user ("Dhruv Sharma") is assumed logged in
@@ -124,15 +114,4 @@ Frontend now runs at `http://localhost:3000`.
 - **SQLite** is used as required; the same SQLAlchemy models would work
   against Postgres/MySQL with only the connection string changed.
 
-## Deployment
 
-- **Frontend**: deploy to Vercel (`vercel.com`) — connect the GitHub repo,
-  set root directory to `frontend`, add env var `NEXT_PUBLIC_API_URL`
-  pointing at your deployed backend URL.
-- **Backend**: deploy to Render (`render.com`) as a Web Service — root
-  directory `backend`, build command `pip install -r requirements.txt`,
-  start command `uvicorn app.main:app --host 0.0.0.0 --port $PORT`.
-  Note: Render's free tier disk is ephemeral, so the SQLite file resets on
-  redeploy — fine for a demo/assignment.
-
-See `DEPLOYMENT.md` for the full step-by-step guide.
