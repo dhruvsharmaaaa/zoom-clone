@@ -174,6 +174,5 @@ Documented here deliberately, since debugging real WebRTC media issues was a sub
 - **Backend**: Render, deployed via the included Dockerfile, root directory backend.
 
 ## Author
-- **Dhruv Sharma**
-- **Netaji Subhas University of Technology**
+- **Dhruv Sharma** (Netaji Subhas University of Technology)
 
